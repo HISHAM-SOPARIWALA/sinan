@@ -8,11 +8,11 @@
     <style>
         /* Custom styles for the energetic fitness theme */
         :root {
-            --primary-color: #464646; /* Red 500 - Strong Energy */
+            --primary-color: #EF4444; /* Red 500 - Strong Energy */
             --secondary-color: #3B82F6; /* Blue 500 - Dynamic */
             --dark-bg: #0C0C0C; /* Near Black */
             --mid-bg: #1A1A1A; /* Dark Grey */
-            --accent-light: #e71414; /* Yellow 400 - Highlight */
+            --accent-light: #FACC15; /* Yellow 400 - Highlight */
             --text-light: #E0E0E0; /* Off-white */
         }
         body {
@@ -22,7 +22,8 @@
             line-height: 1.6;
         }
         .hero-section {
-            background-image: url('https://wallpapers.com/wallpapers/caption-embracing-fitness-state-of-the-art-4k-gym-53wcvwc2088az4xx.html'); /* Darker, more abstract gym background */
+            /* FIXED: Using a functional placeholder image URL that works. */
+            background-image: url('https://placehold.co/1200x600/10b981/ffffff?text=ELITE+GYM+FLOOR'); 
             background-size: cover;
             background-position: center;
             position: relative;
@@ -83,10 +84,10 @@
 </head>
 <body>
 
-    <!-- Firebase SDK Imports (MUST be type="module") --><script type="module">
+    <!-- Firebase Initialization (For Registration Count ONLY) --><script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, collection, setDoc, query, onSnapshot, getDocs, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // IMPORTANT: Use environment variables for configuration and authentication
@@ -98,33 +99,15 @@
         let userId = null;
         let isAuthReady = false;
 
-        const messageBox = document.getElementById('message-box');
-        const form = document.getElementById('registration-form');
-
-        // Function to display user feedback (instead of alert)
-        function showMessage(message, type = 'success') {
-            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
-            messageBox.innerHTML = `
-                <div class="${bgColor} text-white p-3 rounded-lg shadow-md transition duration-300">
-                    ${message}
-                </div>
-            `;
-            setTimeout(() => {
-                messageBox.innerHTML = '';
-            }, 5000);
-        }
-
         // 1. Firebase Initialization and Authentication
         async function initializeFirebase() {
             try {
-                // Set debug logging for development
                 setLogLevel('debug');
                 
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // Sign in with custom token or anonymously
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
@@ -135,81 +118,39 @@
                     if (user) {
                         userId = user.uid;
                         isAuthReady = true;
-                        console.log("Firebase Auth Ready. User ID:", userId);
                     } else {
                         userId = null;
                         isAuthReady = true;
-                        console.log("Firebase Auth Ready. Signed out or anonymous.");
                     }
                     // Start listening for data/enable features dependent on auth
                     if (userId) {
-                        setupLeaderboardListener(); // Example: Listen to registrations for live count
+                        setupLeaderboardListener(); 
                     }
                 });
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
-                showMessage(`Error initializing app: ${error.message}`, 'error');
             }
         }
 
-        // 2. Data Submission Function
-        async function registerClient(event) {
-            event.preventDefault();
-
-            if (!isAuthReady || !db) {
-                showMessage("Authentication not ready. Please try again in a moment.", 'error');
-                return;
-            }
-
-            const formData = new FormData(form);
-            const clientData = {
-                name: formData.get('name'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                goal: formData.get('goal'),
-                timestamp: new Date().toISOString(),
-                referrerId: userId, // Track which user submitted the lead (if applicable)
-            };
-            
-            // Validation (simple check)
-            if (!clientData.name || !clientData.email || !clientData.phone) {
-                showMessage("Please fill in all required fields (Name, Email, Phone).", 'error');
-                return;
-            }
-
-            try {
-                // Public Collection Path: /artifacts/{appId}/public/data/client_registrations
-                const registrationsCollection = collection(db, `artifacts/${appId}/public/data/client_registrations`);
-                
-                await addDoc(registrationsCollection, clientData);
-                
-                showMessage("Success! Your registration is complete. I'll reach out to you shortly!", 'success');
-                form.reset();
-
-            } catch (error) {
-                console.error("Error saving client registration:", error);
-                showMessage(`Registration failed. Please check the console for details.`, 'error');
-            }
-        }
-
-        // 3. (Optional) Example Listener - showing registration count
+        // 2. Listener for showing the current registration count (data previously saved to Firebase)
         function setupLeaderboardListener() {
             const countElement = document.getElementById('registration-count');
+            // Public Collection Path: /artifacts/{appId}/public/data/client_registrations
             const registrationsCollection = collection(db, `artifacts/${appId}/public/data/client_registrations`);
             
             // Simple listener to update the count of total registrations
             onSnapshot(registrationsCollection, (snapshot) => {
                 const count = snapshot.size;
                 countElement.textContent = count;
-                console.log(`Live Registration Count: ${count}`);
             }, (error) => {
                 console.error("Error setting up registration listener:", error);
             });
         }
 
-        // Initialize everything when the window loads
+        // Initialize Firebase on window load
         window.onload = initializeFirebase;
-        form.addEventListener('submit', registerClient);
+        // NOTE: The form submission is now handled purely by the HTML 'action' attribute,
+        // which sends data to Google Forms and redirects the user. The JS submission logic is removed.
 
     </script>
     
@@ -301,25 +242,36 @@
                     Fill out the form below and I'll contact you within 24 hours to schedule your free 15-minute goal-setting session.
                 </p>
 
-                <!-- Message Box for Firebase Feedback --><div id="message-box" class="mb-4"></div>
+                <div id="message-box" class="mb-4"></div>
 
-                <form id="registration-form">
+                <!--
+                    CRITICAL CHANGE: This form now submits directly to the Google Form service endpoint.
+                    You MUST replace the placeholder URLs and entry IDs below with your real Google Form details!
+                -->
+                <form id="registration-form" 
+                      action="https://docs.google.com/forms/d/e/YOUR_GOOGLE_FORM_ID/formResponse" 
+                      method="POST" 
+                      target="_self"> <!-- Submits and redirects the user to the Google Form confirmation page -->
                     <div class="space-y-4">
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
-                            <input type="text" id="name" name="name" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color">
+                            <!-- You MUST replace ENTRY_ID_FOR_NAME with the correct ID -->
+                            <input type="text" id="name" name="entry.ENTRY_ID_FOR_NAME" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color">
                         </div>
                         <div>
                             <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email Address</label>
-                            <input type="email" id="email" name="email" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color">
+                            <!-- You MUST replace ENTRY_ID_FOR_EMAIL with the correct ID -->
+                            <input type="email" id="email" name="entry.ENTRY_ID_FOR_EMAIL" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color">
                         </div>
                         <div>
                             <label for="phone" class="block text-sm font-medium text-gray-300 mb-1">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color" placeholder="(e.g., +91 9876543210)">
+                            <!-- You MUST replace ENTRY_ID_FOR_PHONE with the correct ID -->
+                            <input type="tel" id="phone" name="entry.ENTRY_ID_FOR_PHONE" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color" placeholder="(e.g., +91 9876543210)">
                         </div>
                         <div>
                             <label for="goal" class="block text-sm font-medium text-gray-300 mb-1">Your Primary Fitness Goal</label>
-                            <textarea id="goal" name="goal" rows="3" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color" placeholder="e.g., Lose 10kg, build strength, run a marathon..."></textarea>
+                            <!-- You MUST replace ENTRY_ID_FOR_GOAL with the correct ID -->
+                            <textarea id="goal" name="entry.ENTRY_ID_FOR_GOAL" rows="3" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color" placeholder="e.g., Lose 10kg, build strength, run a marathon..."></textarea>
                         </div>
 
                         <button type="submit" class="w-full py-3 btn-secondary rounded-lg shadow-xl transition duration-300 mt-4 text-lg">
@@ -337,5 +289,4 @@
     </footer>
 
 </body>
-
 </html>
