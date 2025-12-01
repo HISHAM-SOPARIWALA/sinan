@@ -77,12 +77,21 @@
             box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5);
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+        /* --- iOS GLASSMORPHISM STYLE --- */
+        .ios-glass {
+            /* Semi-transparent dark background */
+            background: rgba(30, 30, 30, 0.4); 
+            /* The Blur Magic */
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            /* Subtle border */
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            /* Soft shadow */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        /* Floating animation for the card specifically */
+        .glass-float {
             animation: float 6s ease-in-out infinite;
         }
 
@@ -172,8 +181,8 @@
                 <div class="absolute top-0 right-10 w-72 h-72 bg-red-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
                 <div class="absolute bottom-0 left-10 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
-                <!-- The Glass Card -->
-                <div class="glass-card relative w-full max-w-sm aspect-[4/5] rounded-3xl overflow-hidden flex flex-col items-center justify-end p-6 border-t border-white/20">
+                <!-- The Glass Card (Trainer) -->
+                <div class="ios-glass glass-float relative w-full max-w-sm aspect-[4/5] rounded-3xl overflow-hidden flex flex-col items-center justify-end p-6">
                     
                     <!-- Image Placeholder Content -->
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
@@ -213,7 +222,8 @@
 
         <!-- About Coach Section -->
         <section id="about" class="mb-20">
-            <div class="bg-mid-bg p-8 md:p-12 rounded-3xl shadow-2xl border border-white/5 relative overflow-hidden">
+            <!-- Applied iOS Glass Effect Here Too -->
+            <div class="ios-glass p-8 md:p-12 rounded-3xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-primary-color opacity-5 rounded-bl-full"></div>
                 
                 <h2 class="text-3xl md:text-5xl font-black mb-8 text-center section-header uppercase italic">Why Choose Me?</h2>
@@ -277,7 +287,8 @@
 
         <!-- Registration Form Section -->
         <section id="register" class="max-w-2xl mx-auto">
-            <div class="bg-gradient-to-b from-mid-bg to-black p-8 md:p-10 rounded-3xl shadow-2xl border border-white/10 relative overflow-hidden">
+            <!-- Applied iOS Glass Effect Here (Main Form) -->
+            <div class="ios-glass p-8 md:p-10 rounded-3xl relative overflow-hidden">
                 <!-- Glowing background effect -->
                 <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-red-600 opacity-5 blur-3xl rounded-full pointer-events-none"></div>
 
@@ -297,32 +308,32 @@
                         <div class="relative">
                             <i class="ph-bold ph-user absolute left-4 top-3.5 text-gray-500"></i>
                             <input type="text" id="name" name="entry.ENTRY_ID_FOR_NAME" required placeholder="Full Name" 
-                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/50 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-600">
+                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/40 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-500">
                         </div>
                         
                         <div class="relative">
                             <i class="ph-bold ph-envelope absolute left-4 top-3.5 text-gray-500"></i>
                             <input type="email" id="email" name="entry.ENTRY_ID_FOR_EMAIL" required placeholder="Email Address" 
-                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/50 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-600">
+                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/40 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-500">
                         </div>
                         
                         <div class="relative">
                             <i class="ph-bold ph-phone absolute left-4 top-3.5 text-gray-500"></i>
                             <input type="tel" id="phone" name="entry.ENTRY_ID_FOR_PHONE" required placeholder="Phone Number (WhatsApp)" 
-                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/50 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-600">
+                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/40 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-500">
                         </div>
                         
                         <div class="relative">
                             <i class="ph-bold ph-target absolute left-4 top-3.5 text-gray-500"></i>
                             <textarea id="goal" name="entry.ENTRY_ID_FOR_GOAL" rows="3" required placeholder="What is your #1 Goal right now? (Be specific)" 
-                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/50 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-600"></textarea>
+                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/40 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-500"></textarea>
                         </div>
 
                         <button type="submit" class="w-full py-4 bg-white text-black font-black text-xl uppercase tracking-wide rounded-xl hover:bg-gray-200 hover:scale-[1.02] transition duration-300 shadow-xl mt-4">
                             Submit Application
                         </button>
                         
-                        <p class="text-center text-xs text-gray-600 mt-4">
+                        <p class="text-center text-xs text-gray-500 mt-4">
                             <i class="ph-fill ph-lock-key"></i> Your information is 100% secure.
                         </p>
                     </div>
