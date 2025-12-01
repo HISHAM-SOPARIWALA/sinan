@@ -10,7 +10,7 @@
         :root {
             --primary-color: #EF4444; /* Strong Red for energy and action */
             --secondary-color: #3B82F6; /* Dynamic Blue for secondary actions */
-            --dark-bg: #0C0C0C; /* Near Black */
+            --dark-bg: #050505; /* Pitch Black for high contrast */
             --mid-bg: #1A1A1A; /* Dark Grey */
             --accent-light: #FACC15; /* Yellow 400 - Highlight and attention */
             --text-light: #E0E0E0; /* Off-white */
@@ -20,268 +20,311 @@
             background-color: var(--dark-bg);
             color: var(--text-light);
             line-height: 1.6;
+            overflow-x: hidden;
         }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); transform: scale(1); }
+            50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.7); transform: scale(1.05); }
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .hero-section {
-            /* FIXED: Using a functional, dark gym placeholder URL for stability */
-            background-image: url('https://placehold.co/1200x600/3A3A3A/FACC15?text=DYNAMIC+GYM+BACKGROUND'); 
+            background-image: url('https://placehold.co/1200x1200/111111/333333?text=GYM+AESTHETIC'); 
             background-size: cover;
             background-position: center;
             position: relative;
-            overflow: hidden; 
+            /* Extra dark overlay for text readability */
         }
-        /* Overlay for hero section to make text pop */
+        
         .hero-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* Strong gradient fade for better mobile contrast */
-            background: linear-gradient(to bottom, rgba(12, 12, 12, 0.9), rgba(12, 12, 12, 0.5));
+            /* Sophisticated gradient: Dark at bottom, slightly transparent top */
+            background: linear-gradient(to bottom, rgba(5, 5, 5, 0.7) 0%, rgba(5, 5, 5, 0.95) 80%, rgba(5, 5, 5, 1) 100%);
             z-index: 1;
         }
+
         .hero-content {
             position: relative;
-            z-index: 2;
-            /* Mobile layout adjustment: stack image below text */
-            flex-direction: column; 
-        }
-        .text-gradient-hero {
-            background-image: linear-gradient(to right, var(--primary-color), var(--accent-light));
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: var(--dark-bg);
-            font-weight: 800; 
-        }
-        .btn-primary:hover {
-            background-color: #DC2626; 
-            transform: scale(1.05);
+            z-index: 10;
         }
 
-        /* General button styling for secondary actions */
-        .btn-secondary {
-            background-color: var(--secondary-color);
-            color: var(--dark-bg);
-            font-weight: 800;
+        .text-gradient-hero {
+            background: linear-gradient(135deg, #FFFFFF 0%, var(--primary-color) 100%);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0px 4px 10px rgba(0,0,0,0.5);
         }
-        .btn-secondary:hover {
-            background-color: #2563EB; 
-            transform: scale(1.05);
+
+        .btn-pulse {
+            background: linear-gradient(90deg, var(--primary-color), #DC2626);
+            color: white;
+            font-weight: 800;
+            animation: pulse-glow 2s infinite ease-in-out;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .fade-in-up {
+            animation: slide-up 0.8s ease-out forwards;
         }
 
         /* Accent colors for sections */
-        .section-header {
-            color: var(--accent-light);
-        }
-        .border-accent {
-            border-color: var(--accent-light);
-        }
-        .icon-accent {
-            color: var(--primary-color); /* Changed icon color to primary red */
-        }
+        .section-header { color: var(--accent-light); }
+        .icon-accent { color: var(--primary-color); }
     </style>
     <!-- Load Phosphor Icons (for modern icons) --><script src="https://unpkg.com/phosphor-icons"></script>
 </head>
 <body>
 
-    <!-- Firebase Initialization (For Registration Count ONLY) --><script type="module">
+    <!-- Firebase Initialization (Kept for Registration Count) --><script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // IMPORTANT: Use environment variables for configuration and authentication
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        let db, auth;
-        let userId = null;
-        let isAuthReady = false;
+        let db, auth, userId;
 
-        // 1. Firebase Initialization and Authentication
         async function initializeFirebase() {
             try {
-                setLogLevel('debug');
-                
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        isAuthReady = true;
-                    } else {
-                        userId = null;
-                        isAuthReady = true;
-                    }
-                    // Start listening for data/enable features dependent on auth
-                    if (userId) {
-                        setupLeaderboardListener(); 
-                    }
-                });
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-            }
+                if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
+                else await signInAnonymously(auth);
+                onAuthStateChanged(auth, (user) => { if(user) setupLeaderboardListener(); });
+            } catch (error) { console.error("Firebase init failed:", error); }
         }
 
-        // 2. Listener for showing the current registration count (data previously saved to Firebase)
         function setupLeaderboardListener() {
             const countElement = document.getElementById('registration-count');
-            // Public Collection Path: /artifacts/{appId}/public/data/client_registrations
             const registrationsCollection = collection(db, `artifacts/${appId}/public/data/client_registrations`);
-            
-            // Simple listener to update the count of total registrations
             onSnapshot(registrationsCollection, (snapshot) => {
-                const count = snapshot.size;
-                countElement.textContent = count;
-            }, (error) => {
-                console.error("Error setting up registration listener:", error);
+                countElement.textContent = snapshot.size;
             });
         }
-
-        // Initialize Firebase on window load
         window.onload = initializeFirebase;
-        // NOTE: The form submission is now handled purely by the HTML 'action' attribute,
-        // which sends data to Google Forms and redirects the user. The JS submission logic is removed.
-
     </script>
     
-    <!-- Hero Section --><header class="hero-section text-center py-12 md:py-32 shadow-2xl relative">
+    <!-- Hero Section -->
+    <header class="hero-section text-center min-h-screen flex items-center justify-center relative pt-10 pb-20">
         <div class="hero-overlay"></div>
-        <div class="hero-content relative max-w-6xl mx-auto flex flex-col-reverse md:flex-row items-center justify-center px-4">
+        
+        <div class="hero-content container mx-auto px-4 flex flex-col md:flex-row items-center">
             
-            <!-- Left Side: Text Content (Mobile: Order 2) --><div class="md:w-1/2 text-center md:text-left md:pr-8 mb-6 md:mb-0">
-                <h1 class="text-5xl md:text-8xl font-extrabold mb-3 uppercase leading-tight">
-                    <span class="text-gradient-hero">UNLEASH YOUR</span>
-                    <br>
-                    <span class="text-gradient-hero">POWER</span>
+            <!-- Left Side: Text Content -->
+            <div class="md:w-1/2 text-center md:text-left mb-12 md:mb-0 z-20">
+                
+                <!-- Urgency Badge -->
+                <div class="inline-block bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full mb-6 animate-bounce">
+                    🔥 ONLY 3 SLOTS LEFT THIS MONTH
+                </div>
+
+                <h1 class="text-6xl md:text-8xl font-black mb-4 uppercase leading-none tracking-tight fade-in-up" style="animation-delay: 0.1s;">
+                    UNLEASH<br>
+                    <span class="text-gradient-hero">YOUR TRUE<br>POWER</span>
                 </h1>
-                <p class="text-lg md:text-2xl text-gray-200 mb-6 font-light">
-                    Transform your body & mind with personalized 1-on-1 coaching.
+                
+                <h2 class="text-xl md:text-2xl text-gray-300 mb-8 font-light fade-in-up" style="animation-delay: 0.2s;">
+                    Stop guessing. Start transforming.<br>
+                    <span class="text-white font-semibold">Elite 1-on-1 Coaching tailored to YOU.</span>
+                </h2>
+                
+                <div class="flex flex-col md:flex-row gap-4 justify-center md:justify-start fade-in-up" style="animation-delay: 0.3s;">
+                    <a href="#register" class="btn-pulse px-8 py-4 rounded-lg text-xl tracking-wide uppercase transition duration-300 w-full md:w-auto flex items-center justify-center gap-2">
+                        Start Now <i class="ph-bold ph-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <p class="mt-4 text-sm text-gray-500 flex items-center justify-center md:justify-start gap-2">
+                    <i class="ph-fill ph-check-circle text-green-500"></i> No generic plans. 100% Custom.
                 </p>
-                <a href="#register" class="inline-block px-10 py-4 btn-primary rounded-lg shadow-lg text-lg transform hover:scale-105 transition duration-300 w-full md:w-auto">
-                    JOIN THE ELITE
-                </a>
             </div>
 
-            <!-- Right Side: Trainer Image Placeholder (Mobile: Order 1) --><div class="md:w-1/2 flex justify-center relative mb-8 md:mb-0">
-                <div class="relative w-64 h-64 md:w-96 md:h-96 bg-gray-800 border-4 border-primary-color rounded-2xl shadow-2xl flex items-center justify-center overflow-hidden">
-                    <!-- This is the image placeholder with text --><div class="text-white text-3xl font-bold flex items-center justify-center bg-gray-900 bg-opacity-70 w-full h-full">
-                        TRAINER IMAGE
+            <!-- Right Side: Trainer Image Card -->
+            <div class="md:w-1/2 flex justify-center relative z-10 w-full px-4 fade-in-up" style="animation-delay: 0.4s;">
+                <!-- Decorative Elements behind card -->
+                <div class="absolute top-0 right-10 w-72 h-72 bg-red-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+                <div class="absolute bottom-0 left-10 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+
+                <!-- The Glass Card -->
+                <div class="glass-card relative w-full max-w-sm aspect-[4/5] rounded-3xl overflow-hidden flex flex-col items-center justify-end p-6 border-t border-white/20">
+                    
+                    <!-- Image Placeholder Content -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 z-10"></div>
+                    <div class="absolute inset-0 flex items-center justify-center bg-gray-800 z-0">
+                         <!-- Replace src with your actual image URL later -->
+                        <img src="https://placehold.co/600x800/222/555?text=TRAINER+PHOTO" alt="Trainer" class="w-full h-full object-cover opacity-60">
                     </div>
-                    <!-- Optional: add an iconic gym graphic overlay --><i class="ph-bold ph-barbell text-8xl icon-accent absolute bottom-4 right-4 opacity-20"></i>
+
+                    <!-- Card Content -->
+                    <div class="relative z-20 text-center w-full">
+                        <div class="text-white text-2xl font-bold uppercase tracking-wider mb-1">Your Name</div>
+                        <div class="text-red-500 text-sm font-bold tracking-widest mb-4">ELITE PERFORMANCE COACH</div>
+                        
+                        <div class="grid grid-cols-2 gap-2 text-xs text-gray-300 border-t border-white/10 pt-4">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-white text-lg">500+</span>
+                                <span>Lives Changed</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-white text-lg">100%</span>
+                                <span>Science Based</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+        
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 animate-bounce text-gray-500 hidden md:block">
+            <span class="text-xs uppercase tracking-widest mb-2 block">Scroll to Begin</span>
+            <i class="ph-bold ph-caret-down text-2xl"></i>
+        </div>
     </header>
 
-    <main class="container mx-auto px-4 py-12 md:py-16">
+    <main class="container mx-auto px-4 py-12 md:py-16 relative z-10">
 
-        <!-- About Coach Section --><section id="about" class="mb-12 md:mb-16 bg-mid-bg p-6 md:p-8 rounded-xl shadow-lg border-b-4 border-accent-light">
-            <h2 class="text-3xl md:text-4xl font-bold mb-6 text-center section-header">Your Journey Starts Here.</h2>
-            <div class="md:flex items-center space-y-6 md:space-y-0 md:space-x-8">
-                <div class="md:w-1/3 flex justify-center">
-                    <!-- Placeholder image for the coach --><img src="https://placehold.co/200x200/1A1A1A/E0E0E0?text=COACH" alt="Coach Profile" class="rounded-full border-4 border-primary-color shadow-xl">
+        <!-- About Coach Section -->
+        <section id="about" class="mb-20">
+            <div class="bg-mid-bg p-8 md:p-12 rounded-3xl shadow-2xl border border-white/5 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-primary-color opacity-5 rounded-bl-full"></div>
+                
+                <h2 class="text-3xl md:text-5xl font-black mb-8 text-center section-header uppercase italic">Why Choose Me?</h2>
+                
+                <div class="md:flex items-center gap-10">
+                    <div class="md:w-1/3 flex justify-center mb-8 md:mb-0">
+                        <div class="relative w-48 h-48 md:w-64 md:h-64">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-red-500 to-yellow-500 rounded-full animate-spin-slow opacity-70 blur-md"></div>
+                            <img src="https://placehold.co/300x300/1A1A1A/E0E0E0?text=COACH" alt="Coach Profile" class="relative rounded-full border-4 border-mid-bg shadow-2xl w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <div class="md:w-2/3 text-center md:text-left">
+                        <p class="text-lg md:text-xl text-gray-300 leading-relaxed mb-6">
+                            "I don't just give you a plan; I give you a <span class="text-white font-bold border-b-2 border-red-500">blueprint for life</span>. I specialize in helping busy individuals crush their limits without burnout. My philosophy is simple: Data-driven training, sustainable nutrition, and relentless accountability."
+                        </p>
+                        <div class="flex justify-center md:justify-start gap-4">
+                            <div class="bg-black/50 px-4 py-2 rounded-lg border border-white/10">
+                                <span class="block text-2xl font-bold text-white" id="registration-count">0</span>
+                                <span class="text-xs text-gray-400 uppercase">Athletes Joined</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="md:w-2/3">
-                    <p class="text-base md:text-lg text-gray-300">
-                        I'm dedicated to helping busy professionals and athletes achieve sustainable results through personalized programs. My philosophy is simple: **Smart training, fueling your body right, and consistency.** Forget generic plans—this is about science-backed methods tailored specifically to your body and lifestyle.
-                    </p>
-                    <p class="text-base md:text-lg text-gray-300 mt-4 font-semibold">
-                        Ready to move better, feel stronger, and hit those personal bests? Let's connect.
-                    </p>
-                </div>
-            </div>
-             <p class="text-center mt-6 text-sm text-gray-500">
-                Join <span id="registration-count" class="font-bold text-accent-light">0</span> others who have taken the first step toward a stronger body!
-            </p>
-        </section>
-
-        <!-- Services Section --><section id="services" class="mb-12 md:mb-16">
-            <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center section-header">What You Get: Exclusive 1-on-1</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-
-                <!-- Service 1: Custom Programs --><div class="bg-mid-bg p-6 rounded-xl shadow-xl transform hover:scale-[1.02] transition duration-300 border-t-4 border-primary-color">
-                    <i class="ph-bold ph-calendar-check text-4xl icon-accent mb-3"></i>
-                    <h3 class="text-xl md:text-2xl font-semibold mb-2">Tailored Programming</h3>
-                    <p class="text-gray-300 text-sm">
-                        Workouts built specifically for your body type, fitness level, and schedule. We adjust weekly based on your progress and recovery.
-                    </p>
-                </div>
-
-                <!-- Service 2: Nutrition Coaching --><div class="bg-mid-bg p-6 rounded-xl shadow-xl transform hover:scale-[1.02] transition duration-300 border-t-4 border-primary-color">
-                    <i class="ph-bold ph-apple-half text-4xl icon-accent mb-3"></i>
-                    <h3 class="text-xl md:text-2xl font-semibold mb-2">Performance Nutrition</h3>
-                    <p class="text-gray-300 text-sm">
-                        Beyond dieting—learn how to fuel your body for maximum energy, muscle growth, and fat loss, without restrictive eating.
-                    </p>
-                </div>
-
-                <!-- Service 3: Accountability --><div class="bg-mid-bg p-6 rounded-xl shadow-xl transform hover:scale-[1.02] transition duration-300 border-t-4 border-primary-color">
-                    <i class="ph-bold ph-users-three text-4xl icon-accent mb-3"></i>
-                    <h3 class="text-xl md:text-2xl font-semibold mb-2">Unwavering Support</h3>
-                    <p class="text-gray-300 text-sm">
-                        Direct access for questions, technique checks, and weekly progress reviews to keep you motivated and accountable.
-                    </p>
-                </div>
-
             </div>
         </section>
 
-        <!-- Registration Form Section --><section id="register" class="max-w-md mx-auto">
-            <div class="bg-mid-bg p-6 md:p-8 rounded-xl shadow-2xl border-2 border-accent-light">
-                <h2 class="text-2xl md:text-3xl font-bold text-center mb-5 text-white">Book Your Free Consultation</h2>
-                <p class="text-center text-gray-400 mb-6 text-sm">
-                    Fill out the form below and I'll contact you within 24 hours to schedule your free 15-minute goal-setting session.
-                </p>
+        <!-- Services Section -->
+        <section id="services" class="mb-20">
+            <h2 class="text-3xl md:text-5xl font-black mb-12 text-center text-white uppercase italic">The Blueprint</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                <div id="message-box" class="mb-4"></div>
+                <!-- Service 1 -->
+                <div class="bg-mid-bg p-8 rounded-2xl border border-white/5 hover:border-red-500/50 transition duration-300 group">
+                    <div class="w-14 h-14 bg-red-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-red-500 transition duration-300">
+                        <i class="ph-bold ph-barbell text-3xl text-red-500 group-hover:text-white transition duration-300"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Custom Training</h3>
+                    <p class="text-gray-400">Hyper-personalized workouts designed around your equipment, injuries, and schedule.</p>
+                </div>
 
-                <!--
-                    CRITICAL: This form submits to your Google Form. You MUST replace these placeholders:
-                    1. The 'action' URL (YOUR_GOOGLE_FORM_ID)
-                    2. The 'name' attributes for each input (ENTRY_ID_FOR_NAME, etc.)
+                <!-- Service 2 -->
+                <div class="bg-mid-bg p-8 rounded-2xl border border-white/5 hover:border-red-500/50 transition duration-300 group">
+                    <div class="w-14 h-14 bg-blue-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-500 transition duration-300">
+                        <i class="ph-bold ph-bowl-food text-3xl text-blue-500 group-hover:text-white transition duration-300"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Precision Nutrition</h3>
+                    <p class="text-gray-400">No starvation diets. We fuel your performance with flexible meal plans that actually taste good.</p>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="bg-mid-bg p-8 rounded-2xl border border-white/5 hover:border-red-500/50 transition duration-300 group">
+                    <div class="w-14 h-14 bg-yellow-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-yellow-500 transition duration-300">
+                        <i class="ph-bold ph-chat-circle-text text-3xl text-yellow-500 group-hover:text-white transition duration-300"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">24/7 Access</h3>
+                    <p class="text-gray-400">Direct line to me via WhatsApp. Form checks, adjustments, and motivation whenever you need it.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Registration Form Section -->
+        <section id="register" class="max-w-2xl mx-auto">
+            <div class="bg-gradient-to-b from-mid-bg to-black p-8 md:p-10 rounded-3xl shadow-2xl border border-white/10 relative overflow-hidden">
+                <!-- Glowing background effect -->
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-red-600 opacity-5 blur-3xl rounded-full pointer-events-none"></div>
+
+                <div class="relative z-10 text-center mb-8">
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-2 uppercase italic">Apply for Coaching</h2>
+                    <p class="text-gray-400">Limited intake. Fill this out to see if we're a match.</p>
+                </div>
+
+                <!-- 
+                     REMINDER: Replace action URL and entry IDs with your Google Form details 
                 -->
                 <form id="registration-form" 
                       action="https://docs.google.com/forms/d/e/YOUR_GOOGLE_FORM_ID/formResponse" 
                       method="POST" 
-                      target="_self"> <!-- Submits and redirects the user to the Google Form confirmation page -->
-                    <div class="space-y-4">
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
-                            <!-- You MUST replace ENTRY_ID_FOR_NAME with the correct ID -->
-                            <input type="text" id="name" name="entry.ENTRY_ID_FOR_NAME" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color">
+                      target="_self">
+                    <div class="space-y-5">
+                        <div class="relative">
+                            <i class="ph-bold ph-user absolute left-4 top-3.5 text-gray-500"></i>
+                            <input type="text" id="name" name="entry.ENTRY_ID_FOR_NAME" required placeholder="Full Name" 
+                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/50 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-600">
                         </div>
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email Address</label>
-                            <!-- You MUST replace ENTRY_ID_FOR_EMAIL with the correct ID -->
-                            <input type="email" id="email" name="entry.ENTRY_ID_FOR_EMAIL" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color">
+                        
+                        <div class="relative">
+                            <i class="ph-bold ph-envelope absolute left-4 top-3.5 text-gray-500"></i>
+                            <input type="email" id="email" name="entry.ENTRY_ID_FOR_EMAIL" required placeholder="Email Address" 
+                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/50 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-600">
                         </div>
-                        <div>
-                            <label for="phone" class="block text-sm font-medium text-gray-300 mb-1">Phone Number</label>
-                            <!-- You MUST replace ENTRY_ID_FOR_PHONE with the correct ID -->
-                            <input type="tel" id="phone" name="entry.ENTRY_ID_FOR_PHONE" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color" placeholder="(e.g., +91 9876543210)">
+                        
+                        <div class="relative">
+                            <i class="ph-bold ph-phone absolute left-4 top-3.5 text-gray-500"></i>
+                            <input type="tel" id="phone" name="entry.ENTRY_ID_FOR_PHONE" required placeholder="Phone Number (WhatsApp)" 
+                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/50 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-600">
                         </div>
-                        <div>
-                            <label for="goal" class="block text-sm font-medium text-gray-300 mb-1">Your Primary Fitness Goal</label>
-                            <!-- You MUST replace ENTRY_ID_FOR_GOAL with the correct ID -->
-                            <textarea id="goal" name="entry.ENTRY_ID_FOR_GOAL" rows="3" required class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-secondary-color focus:border-secondary-color" placeholder="e.g., Lose 10kg, build strength, run a marathon..."></textarea>
+                        
+                        <div class="relative">
+                            <i class="ph-bold ph-target absolute left-4 top-3.5 text-gray-500"></i>
+                            <textarea id="goal" name="entry.ENTRY_ID_FOR_GOAL" rows="3" required placeholder="What is your #1 Goal right now? (Be specific)" 
+                                class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/50 border border-white/10 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition outline-none placeholder-gray-600"></textarea>
                         </div>
 
-                        <button type="submit" class="w-full py-3 btn-secondary rounded-lg shadow-xl transition duration-300 mt-4 text-lg">
-                            Submit & Get Started
+                        <button type="submit" class="w-full py-4 bg-white text-black font-black text-xl uppercase tracking-wide rounded-xl hover:bg-gray-200 hover:scale-[1.02] transition duration-300 shadow-xl mt-4">
+                            Submit Application
                         </button>
+                        
+                        <p class="text-center text-xs text-gray-600 mt-4">
+                            <i class="ph-fill ph-lock-key"></i> Your information is 100% secure.
+                        </p>
                     </div>
                 </form>
             </div>
@@ -289,8 +332,12 @@
 
     </main>
 
-    <footer class="text-center py-8 border-t border-gray-700 mt-16">
-        <p class="text-gray-400 text-sm">&copy; 2024 Elite Performance Coaching. Train Smarter, Live Stronger.</p>
+    <footer class="text-center py-10 border-t border-white/5 mt-10 bg-black">
+        <div class="flex justify-center gap-6 mb-6">
+            <a href="#" class="text-gray-400 hover:text-white transition"><i class="ph-bold ph-instagram-logo text-2xl"></i></a>
+            <a href="#" class="text-gray-400 hover:text-white transition"><i class="ph-bold ph-whatsapp-logo text-2xl"></i></a>
+        </div>
+        <p class="text-gray-600 text-sm">&copy; 2024 Elite Performance Coaching. All Rights Reserved.</p>
     </footer>
 
 </body>
